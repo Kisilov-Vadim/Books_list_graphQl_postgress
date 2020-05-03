@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import { graphql } from 'react-apollo';
+// import { graphql } from 'react-apollo';
+import {useQuery} from '@apollo/react-hooks';
 
 //import Components
 import BookDetails from '../BookDetails/BookDetails';
@@ -7,13 +8,17 @@ import BookDetails from '../BookDetails/BookDetails';
 //import query functions
 import { getBooksQuery } from '../../queries/queries';
 
-function BookList(props) {
+function BookList() {
   const [selectedBook, setSelectedBook] = useState(null)
+  const {loading, error, data} = useQuery(getBooksQuery);
 
   const displayBooks = () => {
-    let data = props.data;
-    if (data.loading) {
+    if (loading) {
       return(<div>Loading books...</div>)
+    } else if (error) {
+      return (
+        <div>Sorry, err...</div>
+      )
     } else {
       return data.books.map(book => {
         return(
@@ -35,4 +40,4 @@ function BookList(props) {
   );
 }
 
-export default graphql(getBooksQuery)(BookList);
+export default BookList;

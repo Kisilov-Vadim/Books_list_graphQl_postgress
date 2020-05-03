@@ -1,23 +1,29 @@
 import React from 'react';
-import { graphql } from 'react-apollo';
+import {useQuery} from '@apollo/react-hooks';
 
 //import query functions
 import { getBookQuery } from '../../queries/queries';
 
-function BookDetails(props) {
+function BookDetails({bookId, setSelectedBook}) {
+  const {data, loading} = useQuery(getBookQuery, {
+    variables: { id: bookId },
+  });
 
   const displaBookDetails = () => {
-    const { book } = props.data;
-    if(book) {
+    if(loading) {
+      return (
+        <div>Loading...</div>
+      )
+    } else if (data.book) {
       return (
         <div>
-          <h2>{book.name}</h2>
-          <p>{book.genre}</p>
-          <p>{book.author.name}</p>
+          <h2>{data.book.name}</h2>
+          <p>{data.book.genre}</p>
+          <p>{data.book.author.name}</p>
           <p>All books by this author</p>
           <ul className="other-books">
-              {book.author.books.map(item => {
-                  return <li key={item.id} onClick={() => props.setSelectedBook(item.id)}>{item.name}</li>
+              {data.book.author.books.map(item => {
+                  return <li key={item.id} onClick={() => setSelectedBook(item.id)}>{item.name}</li>
               })}
           </ul>
         </div>
@@ -36,12 +42,4 @@ function BookDetails(props) {
   )
 }
 
-export default graphql(getBookQuery, {
-  options: (props) => {
-    return {
-      variables: {
-        id: props.bookId
-      }
-    }
-  }
-})(BookDetails);
+export default BookDetails;
