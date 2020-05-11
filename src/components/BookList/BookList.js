@@ -28,6 +28,8 @@ function BookList() {
     }
   }
 
+  console.log(data)
+
   return (
     <>
       <ul className="book-list">

@@ -1,7 +1,5 @@
 const graphql = require('graphql');
-const _= require('lodash');
-const Book = require('../models/book');
-const Author = require('../models/author');
+const db = require('../dataBase/index');
 
 const {
   GraphQLObjectType,
@@ -22,7 +20,12 @@ const BookType = new GraphQLObjectType({
     author: {
       type: AuthorType,
       resolve(parent, args) {
-        return Author.findById(parent.authorId)
+        return db
+          .query(`select * from authors where id = $1`, [parent.authorId])
+          .then(res => {
+            return res[0]
+          })
+          .catch(err => console.error(err))
       }
     }
   })
@@ -37,7 +40,11 @@ const AuthorType = new GraphQLObjectType({
     books: {
       type: new GraphQLList(BookType),
       resolve(parent, args) {
-        return Book.find({authorId: parent.id})
+        return db
+          .query(`select * from books where "authorId" = $1`, [parent.id])
+          .then(res => {
+            return res;
+          }, err => console.error(err))
       }
     }
   })
@@ -50,26 +57,47 @@ const RootQuery = new GraphQLObjectType({
       type: BookType,
       args: {id: { type: GraphQLID }},
       resolve(parent, args) {
-        return Book.findById(args.id)
+        return db
+          .query(`select * from books`)
+          .then(res => {
+            return res.find(item => item.id == args.id);
+          })
+          .catch(err => console.error(err))
       }
     },
     author: {
       type: AuthorType,
       args: {id: { type: GraphQLID }},
       resolve(parent, args) {
-        return Author.findById(args.id)
+        return db
+          .query('select * from authors')
+          .then(res => {
+            let author = res.find(author => author.id == args.id)
+            return author;
+          })
+          .catch(err => console.error(err))
       }
     },
     books: {
       type: new GraphQLList(BookType),
       resolve(parent, args) {
-        return Book.find({});
+        return db
+          .query('select * from books')
+          .then(res => {
+            return res;
+          })
+          .catch(err => console.error(err))
       }
     },
     authors: {
       type: new GraphQLList(AuthorType),
       resolve(parent, args) {
-        return Author.find({});
+        return db
+          .query('select * from authors')
+          .then(res => {
+            return res;
+          })
+          .catch(err => console.error(err))
       }
     }
   }
